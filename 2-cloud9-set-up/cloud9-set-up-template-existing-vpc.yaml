@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  Amazon Elasticsearch Service workshop
+
+  Template to setup the AWS Cloud9 environment for the workshop.
+
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
+Parameters:
+  Cloud9Subnet:
+    Description: The VPC subnet into which the Cloud9 IDE will be deployed.
+    Type: AWS::EC2::Subnet::Id
+
+Resources:
+  Cloud9:
+    Type: AWS::Cloud9::EnvironmentEC2 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloud9-environmentec2.html
+    Properties:
+      AutomaticStopTimeMinutes: 30
+      Description: Amazon Elasticsearch Service Workshop
+      InstanceType: t2.small
+      Name: AmazonElasticsearchServiceWorkshop
+      SubnetId: !Ref Cloud9Subnet
+
+Outputs:
+  Cloud9DevEnvUrl:
+    Description: Cloud9 Development Environment
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/cloud9/ide/${Cloud9}"

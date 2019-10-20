@@ -1,0 +1,23 @@
+baseURL = "https://es-workshop.s3.eu-central-1.amazonaws.com"
+uglyurls = true
+
+languageCode = "en-us"
+defaultContentLanguage = "en"
+title = "Amazon Elasticsearch Workshop"
+theme = "learn"
+
+[blackfriday]
+hrefTargetBlank = true
+
+[outputs]
+home = [ "HTML", "RSS", "JSON"]
+
+[params]
+author = "Christian Mueller"
+themeVariant = "mine"
+
+[[menu.shortcuts]] 
+name = "<i class='fab fa-github'></i> Github repo"
+identifier = "ds"
+url = "https://github.com/aws-samples/xxx"
+weight = 10

@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Amazon ElasticSearch cluster index backup and expiration (deletion).
+
+  SAM Template for creating an automated Amazon ElasticSearch cluster index backup and expiration (deletion).
+
+#Parameters:
+
+Resources:
+  StateMachineTriggerFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: state-machine-trigger/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          STATE_MACHINE_ARN: !Ref ElasticSearchDomainIndexBackupAndExpiryStateMachine
+      Policies:
+        - StepFunctionsExecutionPolicy: # https://github.com/awslabs/serverless-application-model/blob/develop/samtranslator/policy_templates_data/policy_templates.json
+            StateMachineName:
+              !GetAtt ElasticSearchDomainIndexBackupAndExpiryStateMachine.Name
+      Events:
+        CloudWatchEventCronTrigger:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 * * * ? *)
+            Name: StateMachineTriggerFunction
+            Description: Triggers StateMachineTriggerFunction each hour
+            Enabled: True
+
+  StateMachineESIndexBackupFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: state-machine-es-index-backup/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          ES_DOMAIN_ENDPOINT: !ImportValue ES-MVP:ES-DOMAIN-ENDPOINT
+      #Policies:
+
+  StateMachineESIndexExpiryFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: state-machine-es-index-expiry/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          ES_DOMAIN_ENDPOINT: !ImportValue ES-MVP:ES-DOMAIN-ENDPOINT
+      #Policies:
+
+  ElasticSearchDomainIndexBackupAndExpiryStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: ElasticSearchDomainIndexBackupAndExpiry-StateMachine
+      DefinitionString: |-
+        {
+          "StartAt": "ESIndexBackup",
+          "States": {
+            "ESIndexBackup": {
+              "Type": "Task",
+              "Resource": "${StateMachineESIndexBackupFunction}",
+              "Next": "ESIndexExpiry"
+            },
+            "ESIndexExpiry": {
+              "Type": "Task",
+              "Resource": "${StateMachineESIndexExpiryFunction}",
+              "End": true
+            }
+          }
+        }
+      RoleArn: !GetAtt StatesExecutionRole.Arn
+      Tags:
+        -
+          Key: 'Name'
+          Value: 'ElasticSearchDomainIndexBackupAndExpiry'
+
+  StatesExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - !Sub states.${AWS::Region}.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: StatesExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource:
+                  - !Ref StateMachineESIndexBackupFunction
+                  - !Ref StateMachineESIndexExpiryFunction
+
+Outputs:
+  ElasticSearchDomainIndexBackupAndExpiryStateMachine:
+    Value: !Ref ElasticSearchDomainIndexBackupAndExpiryStateMachine
+    Export:
+      Name: 'ES-MVP:ES-INDEX-BACKUP-STATE-MACHINE'

@@ -1,0 +1,38 @@
+{
+    "Comment": "An example of the Amazon States Language using a parallel state to execute two branches at the same time.",
+    "StartAt": "es-cluster-creation",
+    "States": {
+        "es-cluster-creation": {
+            "Type": "Pass",
+            "Next": "Parallel"
+        },
+        "Parallel": {
+            "Type": "Parallel",
+            "Next": "audit-execution",
+            "Branches": [
+                {
+                    "StartAt": "es-cluster-index-snapshot",
+                    "States": {
+                        "es-cluster-index-snapshot": {
+                            "Type": "Pass",
+                            "End": true
+                        }
+                    }
+                },
+                {
+                    "StartAt": "es-cluster-index-retention",
+                    "States": {
+                        "es-cluster-index-retention": {
+                            "Type": "Pass",
+                            "End": true
+                        }
+                    }
+                }
+            ]
+        },
+        "audit-execution": {
+            "Type": "Pass",
+            "End": true
+        }
+    }
+}
