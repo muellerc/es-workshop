@@ -1,6 +1,6 @@
 +++
 title = "AWS Cloud9 set-up"
-draft = false
+draft = true
 weight = 20
 pre = "2. "
 +++

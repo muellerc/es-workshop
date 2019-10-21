@@ -1,5 +1,6 @@
 +++
-title = "Automate the index snapshot creation and retention"
+title = "Amazon Elasticsearch Service index snapshot and retention"
+draft = true
 weight = 30
 pre = "3. "
 +++

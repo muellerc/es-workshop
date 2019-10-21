@@ -234,8 +234,17 @@ Resources:
       - Key: Name
         Value: !Sub "${AWS::StackName}:ElasticsearchDomain"
 
+  ElasticsearchDomainEndpoint:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /DEV/ES-WORKSHOP/ES-CLUSTER-ENDPOINT
+      Type: String
+      Value: !Sub "https://${ElasticsearchDomain.DomainEndpoint}"
+      Tags:
+        "Environment": "DEV"
+
 Outputs:
   DomainArn:
     Value: !GetAtt ElasticsearchDomain.DomainArn
   DomainEndpoint:
-    Value: !GetAtt ElasticsearchDomain.DomainEndpoint
+    Value: !Sub "https://${ElasticsearchDomain.DomainEndpoint}"

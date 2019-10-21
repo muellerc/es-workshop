@@ -1,1 +1,0 @@
-https://aws.amazon.com/about-aws/whats-new/2019/09/introducing-analyzing-text-with-amazon-elasticsearch-service-and-amazon-comprehend/

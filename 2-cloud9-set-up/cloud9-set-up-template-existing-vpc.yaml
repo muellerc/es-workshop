@@ -22,6 +22,6 @@ Resources:
       SubnetId: !Ref Cloud9Subnet
 
 Outputs:
-  Cloud9DevEnvUrl:
+  Cloud9IDEUrl:
     Description: Cloud9 Development Environment
     Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/cloud9/ide/${Cloud9}"
