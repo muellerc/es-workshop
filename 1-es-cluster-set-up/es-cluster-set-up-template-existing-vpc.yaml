@@ -118,6 +118,11 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
 
 Resources:
+  AWSServiceRoleForAmazonElasticsearchService:
+    Type: AWS::IAM::ServiceLinkedRole
+    Properties: 
+      AWSServiceName: es.amazonaws.com
+
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -133,7 +138,7 @@ Resources:
   ElasticsearchDomain:
     Type: AWS::Elasticsearch::Domain # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-elasticsearch-domain.html
     Properties:
-      DomainName: !Ref DomainName
+      DomainName: !Sub "${DomainName}-${AWS::StackName}"
       ElasticsearchVersion: !Ref ElasticsearchVersion
       NodeToNodeEncryptionOptions: # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticsearch-domain-nodetonodeencryptionoptions.html
         Enabled: true
@@ -176,7 +181,7 @@ Resources:
   ElasticsearchDomainEndpoint:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /DEV/ES-WORKSHOP/ES-CLUSTER-ENDPOINT
+      Name: !Sub "/DEV/ES-WORKSHOP/ES-CLUSTER-ENDPOINT-${AWS::StackName}"
       Type: String
       Value: !Sub "https://${ElasticsearchDomain.DomainEndpoint}"
       Tags:
@@ -187,3 +192,5 @@ Outputs:
     Value: !GetAtt ElasticsearchDomain.DomainArn
   DomainEndpoint:
     Value: !Sub "https://${ElasticsearchDomain.DomainEndpoint}"
+  SSMElasticsearchDomainEndpointParameter:
+    Value: !Sub "/DEV/ES-WORKSHOP/ES-CLUSTER-ENDPOINT-${AWS::StackName}"
